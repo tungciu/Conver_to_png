@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuyển đổi Ảnh sang PNG</title>
+     <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Chọn ảnh hoặc nhập liên kết để tải về định dạng PNG</h1>
+
+    <!-- Cho phép nhập link ảnh -->
+    <input type="text" id="linkInput" placeholder="Nhập liên kết ảnh">
+    <br>
+
+    <!-- Cho phép tải lên file ảnh -->
+    <input type="file" id="fileInput" accept="image/*">
+    <br>
+
+    <button onclick="convertAndDownload()">Tải về PNG</button>
+    
+    <img id="preview" src="" alt="Preview" style="display:none;">
+
+    <script>
+        function convertAndDownload() {
+            const linkInput = document.getElementById('linkInput').value;
+            const fileInput = document.getElementById('fileInput').files[0];
+
+            // Nếu có link nhập vào, ưu tiên sử dụng link
+            if (linkInput) {
+                processImageFromURL(linkInput);
+            } 
+            // Nếu không có link, kiểm tra file được tải lên
+            else if (fileInput) {
+                processImageFromFile(fileInput);
+            } 
+            // Không có gì cả
+            else {
+                alert("Vui lòng nhập liên kết hoặc chọn một tệp!");
+            }
+        }
+
+        // Xử lý ảnh từ liên kết
+        function processImageFromURL(url) {
+            const img = new Image();
+            img.crossOrigin = "Anonymous"; // Để đảm bảo có thể tải về khi ảnh từ nguồn khác
+            img.src = url;
+
+            img.onload = function() {
+                convertImageToPNG(img);
+            };
+
+            img.onerror = function() {
+                alert("Không thể tải ảnh từ liên kết. Vui lòng kiểm tra liên kết!");
+            };
+        }
+
+        // Xử lý ảnh từ tệp tải lên
+        function processImageFromFile(file) {
+            const fileReader = new FileReader();
+            fileReader.onload = function(event) {
+                const img = new Image();
+                img.src = event.target.result;
+
+                img.onload = function() {
+                    convertImageToPNG(img);
+                };
+            };
+            fileReader.readAsDataURL(file);
+        }
+
+        // Chuyển đổi ảnh thành PNG và tải xuống
+        function convertImageToPNG(img) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            ctx.drawImage(img, 0, 0);
+
+            // Chuyển đổi thành PNG và tải xuống
+            const pngUrl = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = pngUrl;
+            a.download = 'converted-image.png';
+            a.click();
+
+            // Hiển thị ảnh preview
+            const preview = document.getElementById('preview');
+            preview.src = pngUrl;
+            preview.style.display = 'block';
+        }
+    </script>
+
+</body>
+</html>
